@@ -1,0 +1,124 @@
+﻿@model CmsShoppingCart.Models.ViewModels.Pages.Shop.ProductVM
+
+@{
+    ViewBag.Title = Model.Name;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>@Model.Name</h2>
+<br />
+
+<div class="row">
+
+    <div class="col-xs-12 col-md-4">
+        <img class="productimg" src="/Images/Uploads/Products/@Model.Id/Thumbs/@Model.ImageName" />
+    </div>
+    <div class="col-xs-12 col-md-8">
+        @Html.DisplayFor(model => model.Description)
+        <br />
+        $@Html.DisplayFor(model => model.price)
+        <br />
+
+        @if (Request.IsAuthenticated && User.IsInRole("User"))
+        {
+            <div class="addtocart">
+                <a href="#" class="btn btn-primary addtocart">Add to cart</a>
+                <span class="loader">
+                    <img src="~/Content/img/ajax-loader.gif" />
+                </span>
+                <span class="ajaxmsg">
+                    The product has been added to your cart
+                </span>
+            </div>
+        }
+
+
+    </div>
+
+</div>
+
+<div class="col-xs-12 fancyboxdiv overlaycontainer">
+    <br /><br />
+    <p>
+        Click on the images below to view       
+    </p>
+    @foreach (var image in Model.GalleryImages)
+    {
+
+        <div class="overlaybox bordered" >
+
+            <div class="imgbox">
+                <a class="fancybox" rel="gallery1" href="/Images/Uploads/Products/@Model.Id/Gallery/@image">
+                    <img src="/Images/Uploads/Products/@Model.Id/Gallery/Thumbs/@image" />
+                </a>
+            </div>
+
+            <div class="overlay">
+
+            </div>
+
+
+        </div>
+    }
+</div>
+
+<link href="~/Content/jquery.fancybox.css" rel="stylesheet" />
+@section Scripts {
+
+    <script src="~/Scripts/jquery.fancybox.js"></script>
+
+    <script>
+        $(function () {
+
+            $(".fancybox").fancybox();
+
+            $("a.addtocart").on("click", function (e) {
+                e.preventDefault();
+                var $this = $(this);
+
+                $this.parents().find(".productimg").clone()
+                .addClass("zoom").appendTo("body");
+                setTimeout(function () {
+                    $(".zoom").remove();
+                }, 1000);
+
+                //$("span.loader").addClass("ib");
+
+                var url = "/cart/AddToCartPartial";
+
+                $.get(url,{id:@Model.Id},function(data) {
+                    $(".ajaxcart").html(data) //data here is PartialView that was returned from url(method)
+                    $("span.loader").addClass("ib");
+                })
+                    .success(function()
+                    {
+                        
+                        setTimeout(function(){
+                            $("span.loader").removeClass("ib");
+                        },1000);
+
+                        setTimeout(function(){
+                            toastr.success("Product was added successfully!","",{timeOut: 1500});
+                        },1500);
+
+
+
+                    })
+                
+                .error(function(){
+                    setTimeout(function(){
+                        $("span.loader").removeClass("ib");
+                    },1000);
+
+                    setTimeout(function(){
+                        toastr.error("something wrong happen !","",{timeOut: 1500});
+                    },1500);
+
+                });
+
+            });//END OF CLICK
+
+        });//END OF function
+    </script>
+
+}

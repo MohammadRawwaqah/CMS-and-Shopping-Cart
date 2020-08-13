@@ -1,0 +1,121 @@
+﻿@model IEnumerable<CmsShoppingCart.Models.ViewModels.Pages.PageVM>
+
+@{
+    ViewBag.Title = "Pages";
+}
+
+<h2>Pages</h2>
+
+@* HERE we put null for ID if you didn't have an id in ActionLink  *@
+    @Html.ActionLink("Add New Page", "AddPage" ,null, new { @class = "btn btn-primary" })
+
+
+@if (!Model.Any())
+{
+    <h1 class="text-center">Sorry There Is No Pages ! :(</h1>
+}
+else
+{
+    <table class="table sorting" id="pages">
+        <tr class="home">
+            <th>
+                Title
+            </th>
+
+            <th>
+                Slug
+            </th>
+
+            <th>
+                Sidebar
+            </th>
+            <th></th>
+        </tr>
+
+
+
+        @foreach (var item in Model)
+        {
+            <tr id="id_@item.Id" class="@item.Slug">
+                <td>
+                    @* modelItem (i mean first argument in lampda expression)
+                       here represent always what you recieve in this HTML page
+                      'look above this page' it is IEnumerable<PageVM> *@
+                    @Html.DisplayFor(modelItem => item.Title)
+                    @* so we can't write this @Html.DisplayFor(modelItem=>modelItem.Title) WHY !!
+                        because we said before that first argument represent what you recieve RIGHT!
+                        and you reiceved IEnumerable<PageVM> OK so how you want to write this
+                        modelItem.Title modelItem here is a IEnumerable it is a list
+                        so we must flaten this list using foreach to reach items inside  *@
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Slug)
+                </td>
+
+                <td>
+                    @Html.DisplayFor(modelItem => item.HasSidebar)
+                </td>
+                <td>
+                    @Html.ActionLink("Details", "PageDetails", new { id = item.Id }, new { @class = "btn btn-primary" }) |
+                    @Html.ActionLink("Edit", "EditPage", new { id = item.Id },new {@class= "btn btn-warning" }) |
+                    @if (item.Slug != "home")
+                    {
+                        @Html.ActionLink("Delete", "DeletePage", new { id = item.Id }, new { @class = "btn btn-danger" })
+                    }
+
+                </td>
+            </tr>
+        }
+
+    </table>
+
+}
+
+@section Scripts{
+
+    <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js">
+
+    </script>
+
+    <script>
+
+        $(function () {
+
+            @* confirm page deletion *@
+
+            $("a.delete").on("click", function () {
+                if (!confirm("Are You Sure To Delete This Page"))
+                    return false
+            });
+
+            ///////////////////////////////////////////////////////////////////////////
+            @* reorder pages *@
+
+
+            $("table#pages tbody").sortable({
+                items: "tr:not(.home)",
+                placeholder: "ui-state-highlight",
+                update: function () {
+                    var ids = $("table#pages tbody").sortable("serialize");
+                    var url = "/Admin/Pages/ReorderPages";
+
+                    $.post(url, ids);
+
+                }
+            });
+
+
+
+
+
+            ///////////////////////////////////////////////////////////////////////////
+
+        });
+    </script>
+
+
+
+
+}
+
+

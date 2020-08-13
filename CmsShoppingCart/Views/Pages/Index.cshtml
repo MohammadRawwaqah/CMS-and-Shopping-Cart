@@ -1,0 +1,10 @@
+﻿@model CmsShoppingCart.Models.ViewModels.Pages.PageVM
+
+@{
+    ViewBag.Title = ViewBag.PageTitle; //this will be send to layout as you know we will print ViewBag.Title there
+    TempData["title"] = ViewBag.Title;
+}
+
+@Html.Raw(Model.Body) @*this (Body) Field should filled by Admin Of This Site*@ 
+
+<br />

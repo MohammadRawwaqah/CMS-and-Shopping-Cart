@@ -1,0 +1,19 @@
+﻿@model CmsShoppingCart.Models.ViewModels.Cart.CartVM
+
+
+<ul class="ajaxcart">
+    <li>Your cart: @Model.Quantity item(s) - $ @Model.Price</li>
+
+
+    @*@Html.ActionLink("Checkout", "Index")*@
+    <li>
+        <a href="/Cart/Index">
+            <i class="fas fa-shopping-cart fa-lg cartcart">  </i>
+        </a>
+    </li>
+
+</ul>
+
+
+
+

@@ -1,0 +1,257 @@
+﻿@model IEnumerable<CmsShoppingCart.Models.ViewModels.Pages.Shop.CategoryVM>
+
+@{
+    ViewBag.Title = "Categories";
+}
+
+<h2>Categories</h2>
+
+<div class="new-cat">
+    <input type="text" id="newcatname" class="form-control form-control-inline" />
+
+    <p>
+        <a href="#" id="newcata" class="btn btn-primary">Add a new category</a>
+        <span class="ajax-text">
+            <img src="~/Content/img/ajax-loader.gif" />
+        </span>
+    </p>
+</div>
+
+@if (!Model.Any())
+{
+    <h1 class="text-center">There are no categories.</h1>
+}
+else
+{
+
+    <table class="table sorting categories" id="pages">
+        <tr class="home">
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+
+
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr id="id_@item.Id">
+                <td>
+                    <div class="ajaxdivtd"></div>
+                    @Html.EditorFor(modelItem => item.Name, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                </td>
+
+                <td>
+                    @Html.ActionLink("Delete", "DeleteCategory", new { id = item.Id }, new { @class = "btn btn-danger" })
+                </td>
+            </tr>
+        }
+
+    </table>
+}
+
+@section Scripts{
+
+    <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js">
+
+    </script>
+
+    <script>
+
+        //$(function () {
+        $(document).ready(function () {
+
+            @* Add new category ************************************* *@
+
+            var newCatA = $("a#newcata");//link.
+            var newCatTextInput = $("#newcatname");//textbox.
+            var ajaxText = $("span.ajax-text");//whole span with "image-Loading-Gif" that inside it.
+            var table = $("table#pages tbody");//body for any table has #pages ID.
+
+            newCatTextInput.keyup(function (e) {
+                if (e.keyCode == 13) { //13 here is Enter in JavaScript.
+                    newCatA.click();
+                }
+            });
+            newCatA.click(function (e) {
+                var catName = newCatTextInput.val();
+
+                if (catName.length < 2) {
+                    alert("Category name must be at least 2 characters long.");
+                    return false;
+                }
+
+                ajaxText.show();//We hide ajaxText before. in (Site.css) file we write this: display: none;
+
+                var url = "/admin/shop/AddNewCategory";
+
+
+                $.post(url, { catName: catName }, function (data) {
+
+                    var response = data.trim();
+
+                    if (response == "titletaken") {
+                        ajaxText.html("<span class='alert alert-danger'>That title is taken!</span>");
+                        setTimeout(function () {
+
+                            ajaxText.fadeOut("fast", function () {
+
+                                ajaxText.html("<img src=/Content/img/ajax-loader.gif />");
+
+                            });
+                        }, 2000);
+                        return false;
+                    }
+                    else {
+                        //this code will be executed if data saved in the table. SO WE just showing data from table
+                        //to the page, so first of all we refresh the page if the table doesn't exist already.
+                        //else, so table exist so we show data to the user in page.
+
+                        //HINT: if we refresh a page so the table will be exist. HOW!!!
+                        //because now we have data in this model pageVM,
+                        //and look to the top of this page ( i mean go to table)
+                        //there is a condition right... if (!Model.Any())  OK so now we have data so the table will be
+                        //shown. not h1 sentence that say : "There are no categories."
+
+
+                        //We already added your new category in Db but we want to show it in table
+                        //but we must check first if table exisit or not, so if NOT.....> we will run (((((((location.reload();))))) to add table first
+                        if (!$("table#pages").length) //here we check if does table exist or not so we use .length
+                        {
+                            location.reload();// here it is the same as reload button on your machine.
+                        }
+                        else {//this will be excuted if table exisit, so no need to location.reload 
+                            ajaxText.html("<span class='alert alert-success'>The category has added!");
+                            setTimeout(function () {
+                                ajaxText.fadeOut("fast", function () {
+                                    ajaxText.html("<img src=/Content/img/ajax-loader.gif />");
+                                });
+                            }, 2000);
+
+                            newCatTextInput.val("");
+
+                            var toAppend = $("table#pages tbody tr:last").clone();//why we clone it ! to add a new table row <tr> and give it an id.
+                            toAppend.attr("id", "id_" + data);//the data here is an (id)
+                            toAppend.find("#item_Name").val(catName);//#item_Name here is an id that was placed by mvc itself not me. inspect TextBox. open browser and right click on text box  then inspect it and see the #item_Name.
+                            toAppend.find("a.delete").attr("href", "/admin/shop/DeleteCategory/" + data);
+                            table.append(toAppend);//OK NOW HERE we add this tr i mean toAppend to our table even though this data was added to database but in this line we just bring and show it from database to the user page.WITHOUT RELOAD PAGE.
+                            table.sortable("refresh");//here we reload table not the page and this is benifit of ajax.
+                        }
+                    }
+                }); //end of post method
+
+            });
+
+
+            ///////////////////////////////////////////////////////////////////////////
+            @* reorder pages *@
+
+
+            $("table#pages tbody").sortable({           //you can catch every item inside table and drag it in another place inside table
+                items: "tr:not(.home)",                 //all tr,But not tr that has a home class.
+                placeholder: "ui-state-highlight",
+                update: function () {
+                    var ids = $("table#pages tbody").sortable("serialize"); //now sortable take every general item(tr and all descending of it) inside tbody and give it a number.and it will give the first tr or any item the number 1 and secont tr number 2.
+                    var url = "/Admin/Shop/ReorderCategories";
+
+                    $.post(url, ids, function (data) {
+                    });
+
+                }
+            });
+
+
+
+            ///////////////////////////////////////////////////////////////////////////
+
+            @* confirm page deletion *@
+            //$("a.delete").click( function () { WRONG X
+            //$("a.delete").on("click", function () { WRONG X
+
+            // (Delete confirm) You must write it in this way  $("body").on("click","a.delete"
+            //to make jquery know the full path
+            //AND because we add this record dynamically look a little bit upper this code.
+            // we write   table.append(toAppend);  so NEW  ((((i said NEW DATA)))) or record added dynamically
+            //not in foreach and write @@Html.displayFor(...)
+            //!!! but why we added it dynamically ! to give it an id and make another things.
+
+            $("body").on("click", "a.delete", function () {
+                if (!confirm("Are You Sure To Delete This Page"))
+                    return false;
+            });
+
+
+            ///////////////////////////////////////////////////////////////////////////
+            @* rename categories *@
+
+            var originalTextBoxValue;
+            $("table#pages input.text-box").dblclick(function () {
+
+                originalTextBoxValue = $(this).val();
+                $(this).attr("readonly", false);
+            });
+
+            $("table#pages input.text-box").keyup(function (e) {
+                if (e.keyCode == 13) {
+                    $(this).blur();
+                }
+            });
+
+            $("table#pages input.text-box").blur(function () {
+
+                var $this = $(this);
+                var ajaxdiv = $this.parent().find(".ajaxdivtd");
+                var newCatName = $this.val();
+                var id = $this.parent().parent().attr("id").substring(3);
+                var url = "/admin/shop/RenameCategory";
+
+                if (newCatName.length < 2) {
+                    alert("Category name must be at least 2 characters long.");
+                    $this.attr("readonly", true);
+                    return false;
+                }
+
+                $.post(url, { newCatName: newCatName, id: id }, function (data) {
+
+                    var response = data.trim();
+
+                    if (response == "titletaken") {
+                        $this.val(originalTextBoxValue);
+                        ajaxdiv.html("<span class='alert alert-danger'>That title is taken!</span>").show();
+                    }
+                    else {
+                        ajaxdiv.html("<span class='alert alert-success'>The category name has been changed!</span>").show();
+
+                    }
+
+                    setTimeout(function () {
+                        ajaxdiv.fadeOut("fast", function () {
+                            ajaxdiv.html("");
+                        });
+                    }, 2000);
+
+                }).done(function () {
+                    $this.attr("readonly", true);
+                });
+
+            });
+
+
+
+
+
+
+            ///////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+        });
+    </script>
+
+
+
+
+}

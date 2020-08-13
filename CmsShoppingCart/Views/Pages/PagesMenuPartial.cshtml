@@ -1,0 +1,19 @@
+﻿@model IEnumerable<CmsShoppingCart.Models.ViewModels.Pages.PageVM>
+
+@foreach (var item in Model)
+{
+    //TempData["title"] Value still exisit because we come from index then to layout then
+    //if you click on any page above on navbar so you will come here here
+    //and layout doesn't action so TempData["title"] still exisit .
+    //TempData["title"] Value destroyed after first redirect to action and layout not an action
+    //so you just went form index to here
+    string r = (string)TempData["title"];
+    if (r == item.Title)
+    {
+        <li class="active">  <a href="/@item.Slug"> @item.Title </a>   </li>
+    }
+    else
+    {
+        <li>  <a href="/@item.Slug"> @item.Title </a>   </li>
+    }
+}

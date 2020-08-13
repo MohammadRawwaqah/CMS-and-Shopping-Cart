@@ -1,0 +1,74 @@
+﻿@model CmsShoppingCart.Models.ViewModels.Account.SendingEmailVM
+
+@*@using (Html.BeginForm("SendingEmail", "Account", FormMethod.Post))
+    { }*@
+
+<form id="mailform">
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    <div class="email ">
+        <div class="text">Email</div>
+        <input type="email" id="Email" name="Email" class="blackfont" required />
+    </div>
+
+    <div class="msg ">
+        <div class="text">Message</div>
+        <textarea rows="2" id="Message" name="Message" cols="25" class="blackfont" required></textarea>
+    </div>
+
+    <div>
+        <input id="btnsubmit" type="submit" value="Submit" class="btn btn-danger" />
+    </div>
+
+</form>
+
+<script>
+
+    $(document).ready(function () {
+        
+        $("#btnsubmit").click(function (e) {
+            e.preventDefault();
+            var $form = $("#mailform")
+            if ($form[0].checkValidity())
+            {
+                
+                var valdata = $form.serialize();
+                $.ajax({
+                    url: "/Account/SendingEmail",
+                    type: "POST", //type used in jQuery before 1.9.0 -- method used after 1.9.0
+                    dataType: 'json', // it is data you expected from server, if you don't write it i mean (Default) is intelligently guessing. But in some cases you must write dataType.
+                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                    data: valdata,
+                    success: function (result, status, xhr) {
+                        if (result.sta == "success") {
+                            toastr.success("Message sent successfullyQ!");
+
+                        }
+                        if(result.sta == "fail")
+                        {
+                            toastr.error("Sorry2! ");
+                            alert("sorry! using alert js  sta variable = fail");
+                        }
+
+                    },
+                    error: function (xhr, status, errmsg) {
+                        toastr.error("Sorry3! ");
+                        alert("sorry! using alert js error in xhr");
+
+                    }
+                });
+            }
+            else
+            {
+                //Validate Form
+                $form[0].reportValidity()
+                toastr.error("Please fill ");
+            }
+
+
+
+
+        });
+    });
+</script>  

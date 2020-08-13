@@ -1,0 +1,243 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - CmsShoppingCart</title>
+    @{
+        TempData["Title"] = ViewBag.Title;
+    }
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+
+    <script src="https://kit.fontawesome.com/de6a201f75.js" crossorigin="anonymous"></script>
+    <link href="~/Content/toastr.css" rel="stylesheet" />
+    <link rel="icon" href="~/icon.png" />
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+
+</head>
+<body>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+
+
+
+    <div class="navbar navbar-default ">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a href="/" class="navbar-brand"><i class="fas fa-home fa-lg"></i>&nbsp;CmsShoppingCart</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    @*this goes to PagesMenuPartial action and render view here NOTE: View there was a partial
+                        SO it isn't have a layout AND that view just have a lists <li> of pages that you have in your DataBase*@
+                    @Html.Action("PagesMenuPartial", "Pages")
+
+                    @if (Request.IsAuthenticated)
+                    {
+                        <li><a href="/account/logout">Logout</a></li>
+                    }
+                    else
+                    {
+                        if (ViewBag.Title == "Login")
+                        {
+                            //if he in login page so make login link activated
+                            //to make user know that he inside login page
+                            <li class="active"><a href="/account/login">Login</a></li>
+                        }
+                        else
+                        {
+                            //if he doesn't in login page so put log link but with being activated
+                            <li><a href="/account/login">Login</a></li>
+                        }
+                    }
+
+                    @if (Request.IsAuthenticated && User.IsInRole("User"))
+                    {
+                        if (ViewBag.Title == "User Profile" || ViewBag.Title == "Orders")
+                        {
+                            //this to show Firstname and Lastname for user
+                            <li class="active">@Html.Action("UserNavPartial", "Account", new { area = "" })</li>
+
+                        }
+                        else
+                        {
+                            //this to show Firstname and Lastname for user
+                            <li>@Html.Action("UserNavPartial", "Account", new { area = "" })</li>
+
+                        }
+
+                    }
+
+                </ul>
+
+                @if (Request.IsAuthenticated && User.IsInRole("Admin"))
+                {
+                    <div class="navbar-right admin"><i class="fas fa-user-shield  "></i></div>
+
+                    <ul class="navbar-collapse collapse navbar-right nav navbar-nav ">
+                        <li>@Html.ActionLink("Admin Area", "Index", "Dashboard", new { area = "Admin" }, null)</li>
+                    </ul>
+                }
+                else
+                {
+                    if (ViewBag.Title != "Cart Details")
+                    {
+                        if (User.Identity.IsAuthenticated)
+                        {
+                            @Html.Action("CartPartial", "Cart")
+
+                        }
+                        else
+                        {
+                            @Html.Action("CartPartialEmpty", "Cart")
+
+                        }
+
+
+                    }
+                }
+
+
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="container body-content">
+        <div class="row">
+
+            <div class="ajaxbg">  <span>      <img src="~/Content/img/ajax-loader.gif" />    </span>      </div>
+
+            @if (ViewBag.Title != "Creat Account" &&
+                 ViewBag.Title != "Login" &&
+                 ViewBag.Title != "User Profile" &&
+                 ViewBag.Title != "Orders"
+                )
+            {
+                <div class="col-xs-12 col-md-2 list">
+
+                    @Html.Action("CategoryMenuPartial", "Shop")
+
+                </div>
+            }
+
+            @if (ViewBag.Title == "User Profile")
+            {
+                <div class="col-xs-12 col-md-2">
+                    <ul class="nocircle">
+                        <li><a href="/account/orders" class="btn btn-success">My Orders</a></li>
+                    </ul>
+                </div>
+            }
+
+            @if (ViewBag.Title == "Orders")
+            {
+                <div class="col-xs-12 col-md-2">
+                    <ul>
+                        <li><a href="/account/user-profile">My Profile</a></li>
+                    </ul>
+                </div>
+            }
+
+
+            @if (ViewBag.Sidebar == "Yes")
+            {
+                <div class="col-xs-12 col-md-7">
+
+                    @RenderBody()       @*as you know ALL pages rendered or run inside layout except partial pages
+                        that you can run it alone without layout OR you can here
+                        SO ---> as you can see RenderBody() here used to run OR View Pages in here  *@
+
+                </div>
+                <div class="col-xs-12 col-md-3">
+
+                    @Html.Action("SidebarPartial", "Pages")
+
+                </div>
+
+            }
+            else
+            {
+                <div class="col-xs-12 col-md-10">
+                    @RenderBody()
+                </div>
+            }
+
+        </div>
+
+        @*<footer>
+                <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
+            </footer>*@
+
+
+
+
+    </div>
+
+    <footer class="whitefont">
+        <div class="main-content">
+            <div class="left box">
+                <h2>About Us</h2>
+                <div class="content">
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                        Sed eleifend id ligula et placerat. Duis non lobortis quam,
+                        ut accumsan orci. Etiam non sapien lacus. Proin finibus nisi non sem lacinia faucibus.
+                    </p>
+                    <div class="social">
+                        <a href="#"><span class="fab fa-facebook-f"></span></a>
+                        <a href="#"><span class="fab fa-twitter"></span></a>
+                        <a href="#"><span class="fab fa-instagram"></span></a>
+                        <a href="#"><span class="fab fa-youtube"></span></a>
+                    </div>
+                </div>
+
+            </div>
+            <div class="center box">
+                <h2>Address</h2>
+                <div class="content">
+                    <div class="place">
+                        <span class="fas fa-map-marker-alt"></span>
+                        <span class="text">Jordan, Amman</span>
+                    </div>
+                    <div class="phone">
+                        <span class="fas fa-phone-alt"></span>
+                        <span class="text">+962795478499</span>
+                    </div>
+                    <div class="email">
+                        <span class="fas fa-envelope"></span>
+                        <span class="text">mohammedrawwaqah@gmail.com</span>
+                    </div>
+                    <br />
+                    <hr />
+                    <i class="text-kappa fa fa-lg fa-cc-paypal" style="font-size:80px;color:#deb887"></i>
+                </div>
+            </div>
+
+            <div class="right box">
+                <h2>Contact us</h2>
+                <div class="content">
+
+                    @Html.Action("SendingEmail", "Account", null)
+
+                </div>
+            </div>
+
+        </div>
+    </footer>
+
+    @Scripts.Render("~/bundles/scripts")
+    <script src="~/Scripts/toastr.js"></script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>
+
