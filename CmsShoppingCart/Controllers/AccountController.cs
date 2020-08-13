@@ -43,7 +43,11 @@ namespace CmsShoppingCart.Controllers
 
             using (Db db = new Db())
             {
-                if (db.Users.Any(x => x.Username.Equals(model.Username) && x.Password.Equals(model.Password)))
+                //you must assign hashed password before
+                //check if that exisit in DB or not.
+                string StrPassword = UserVM.hashpass(model.Password);
+                if (db.Users.Any(x => x.Username.Equals(model.Username)
+                && x.Password.Equals(StrPassword)))
                 {
                     isValid = true;
                 }
@@ -99,7 +103,7 @@ namespace CmsShoppingCart.Controllers
                     LastName = model.LastName,
                     EmailAddress = model.EmailAddress,
                     Username = model.Username,
-                    Password = model.Password
+                    Password = UserVM.hashpass(model.Password)
                 };
 
                 db.Users.Add(userDTO);

@@ -11,6 +11,20 @@ namespace CmsShoppingCart.Models.ViewModels.Account
 {
     public class UserVM
     {
+
+        static public string hashpass(string password)
+        {
+            SHA1CryptoServiceProvider sh = new SHA1CryptoServiceProvider();
+            sh.ComputeHash(ASCIIEncoding.ASCII.GetBytes(password));
+            byte[] se = sh.Hash;
+            StringBuilder sb = new StringBuilder();
+            foreach (byte b in se)
+            {
+                sb.Append(b.ToString("x2"));
+            }
+            return sb.ToString();
+        }
+
         public UserVM()
         {
 
